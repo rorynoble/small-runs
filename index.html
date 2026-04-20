@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Small Runs — Artist Merch, Made Fast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0d0d0d;
+    --white: #f5f2ed;
+    --cream: #ede9e2;
+    --accent: #e8452a;
+    --mid: #6b6560;
+    --border: rgba(13,13,13,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--white);
+    color: var(--black);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 40px;
+    mix-blend-mode: normal;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: var(--black);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links {
+    display: flex; gap: 32px; list-style: none; align-items: center;
+  }
+  .nav-links a {
+    text-decoration: none; color: var(--black); font-size: 13px;
+    font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+    opacity: 0.7; transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+  .nav-cta {
+    background: var(--black); color: var(--white) !important;
+    opacity: 1 !important; padding: 10px 20px;
+    border-radius: 2px; transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--accent) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 80px;
+  }
+  .hero-left {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 80px 60px 80px 60px;
+    border-right: 1px solid var(--border);
+  }
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 24px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 9vw, 130px);
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+    color: var(--black);
+    margin-bottom: 32px;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 17px; line-height: 1.6; color: var(--mid);
+    max-width: 400px; margin-bottom: 48px; font-weight: 300;
+  }
+  .hero-actions { display: flex; gap: 16px; align-items: center; }
+  .btn-primary {
+    background: var(--black); color: var(--white);
+    padding: 16px 32px; font-size: 13px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    text-decoration: none; border-radius: 2px;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-ghost {
+    color: var(--black); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.04em; text-decoration: none; text-transform: uppercase;
+    border-bottom: 1px solid var(--black); padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
+
+  .hero-right {
+    background: var(--cream);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 60px;
+    position: relative; overflow: hidden;
+  }
+  .hero-visual {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-garment {
+    width: 340px; height: 340px; position: relative;
+  }
+  .tee-shape {
+    width: 100%; height: 100%;
+    background: var(--black);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 12%, 85% 12%, 85% 100%, 15% 100%, 15% 12%, 0% 12%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .tee-shape::after {
+    content: 'SMALL\ARUNS';
+    white-space: pre;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px; letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.15);
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; line-height: 1;
+  }
+  .press-mark {
+    position: absolute; top: 48%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px; height: 90px;
+    border: 3px solid var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .press-mark span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); line-height: 1.4; text-align: center;
+  }
+
+  .hero-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--border); border: 1px solid var(--border);
+    z-index: 2;
+  }
+  .stat {
+    background: var(--cream);
+    padding: 24px 20px;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px; letter-spacing: 0.02em; line-height: 1;
+    color: var(--black);
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--mid); margin-top: 6px;
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--black); color: var(--white);
+    padding: 14px 0; overflow: hidden;
+    border-top: none;
+  }
+  .ticker-inner {
+    display: flex; gap: 60px; white-space: nowrap;
+    animation: ticker 18s linear infinite;
+  }
+  .ticker-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 20px;
+    flex-shrink: 0;
+  }
+  .ticker-dot { color: var(--accent); font-size: 16px; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── WHAT WE DO ── */
+  .section { padding: 100px 60px; }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 5vw, 72px);
+    line-height: 0.95; letter-spacing: 0.01em;
+    margin-bottom: 20px;
+  }
+
+  .products-section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+  .products-header {
+    padding: 0 60px 60px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .products-header p {
+    color: var(--mid); font-size: 16px; font-weight: 300;
+    max-width: 360px; line-height: 1.6;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+  }
+  .product-card {
+    padding: 48px 36px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    cursor: default;
+  }
+  .product-card:last-child { border-right: none; }
+  .product-card:hover { background: var(--cream); }
+  .product-icon {
+    font-size: 36px; margin-bottom: 20px; display: block;
+  }
+  .product-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.02em; margin-bottom: 8px;
+  }
+  .product-desc {
+    font-size: 13px; color: var(--mid); line-height: 1.6; font-weight: 300;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  .how-left {
+    padding: 100px 60px;
+    border-right: 1px solid var(--border);
+  }
+  .how-left p {
+    color: var(--mid); font-size: 16px; font-weight: 300;
+    max-width: 380px; line-height: 1.7; margin-top: 20px;
+  }
+  .how-right { padding: 100px 60px; }
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex; gap: 24px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:first-child { padding-top: 0; }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; color: var(--accent);
+    min-width: 28px; padding-top: 3px;
+  }
+  .step-content h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px; letter-spacing: 0.02em; margin-bottom: 8px;
+  }
+  .step-content p {
+    font-size: 14px; color: var(--mid); line-height: 1.6; font-weight: 300;
+  }
+
+  /* ── SHIPPING ── */
+  .shipping-section {
+    border-top: 1px solid var(--border);
+    background: var(--black); color: var(--white);
+    padding: 100px 60px;
+  }
+  .shipping-section .section-label { color: var(--accent); }
+  .shipping-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: rgba(255,255,255,0.1);
+    margin-top: 60px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .ship-card {
+    padding: 48px 40px;
+    background: var(--black);
+    transition: background 0.2s;
+  }
+  .ship-card:hover { background: #1a1a1a; }
+  .ship-icon { font-size: 32px; margin-bottom: 20px; display: block; }
+  .ship-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.02em; margin-bottom: 8px;
+    color: var(--white);
+  }
+  .ship-detail {
+    font-size: 13px; color: rgba(255,255,255,0.45);
+    line-height: 1.6; font-weight: 300;
+  }
+  .ship-highlight {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px; border-radius: 2px;
+    margin-top: 12px;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    border-top: 1px solid var(--border);
+    padding: 120px 60px;
+    text-align: center;
+  }
+  .cta-section .section-title { font-size: clamp(56px, 8vw, 110px); }
+  .cta-section p {
+    color: var(--mid); font-size: 18px; font-weight: 300;
+    max-width: 480px; margin: 24px auto 48px; line-height: 1.6;
+  }
+  .cta-email {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; letter-spacing: 0.06em;
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 2px;
+  }
+  .cta-divider {
+    color: var(--mid); margin: 0 16px; font-size: 14px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 60px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 0.06em;
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-left { padding: 60px 24px; border-right: none; }
+    .hero-right { display: none; }
+    .section { padding: 60px 24px; }
+    .products-header { padding: 0 24px 40px; flex-direction: column; align-items: flex-start; gap: 16px; }
+    .products-grid { grid-template-columns: 1fr 1fr; }
+    .product-card { border-right: none; border-bottom: 1px solid var(--border); }
+    .how-section { grid-template-columns: 1fr; }
+    .how-left { padding: 60px 24px; border-right: none; border-bottom: 1px solid var(--border); }
+    .how-right { padding: 60px 24px; }
+    .shipping-section { padding: 60px 24px; }
+    .shipping-grid { grid-template-columns: 1fr; }
+    .cta-section { padding: 80px 24px; }
+    footer { padding: 32px 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Small<span>.</span>Runs</a>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#shipping">Shipping</a></li>
+    <li><a href="#contact" class="nav-cta">Get a Quote</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-tag">Heat Press Merch for Artists</p>
+    <h1 class="hero-title">Your<br>Merch,<br><em>Fast.</em></h1>
+    <p class="hero-sub">Small-batch custom clothing and accessories for artists and labels. From concept to doorstep in 4–5 days.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">Get a Quote</a>
+      <a href="#products" class="btn-ghost">See Products</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-visual">
+      <div class="hero-garment">
+        <div class="tee-shape">
+          <div class="press-mark">
+            <span>Heat<br>Press<br>Co.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">4–5</div>
+        <div class="stat-label">Day Turnaround</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1+</div>
+        <div class="stat-label">Minimum Run</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">NZ &amp; AU</div>
+        <div class="stat-label">Shipping Zones</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Colourways</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Hoodies</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Tees</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Jackets</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Tote Bags</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Caps &amp; Hats</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Crewnecks</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Tank Tops</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Accessories</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Ships NZ &amp; AU</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> 4–5 Day Turnaround</span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Hoodies</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Tees</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Jackets</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Tote Bags</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Caps &amp; Hats</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Crewnecks</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Tank Tops</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Accessories</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> Ships NZ &amp; AU</span>
+    <span class="ticker-item"><span class="ticker-dot">◆</span> 4–5 Day Turnaround</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="products-section" id="products">
+  <div class="products-header fade-up">
+    <div>
+      <p class="section-label">What we press</p>
+      <h2 class="section-title">The<br>Goods</h2>
+    </div>
+    <p>We heat press on a wide range of blanks. Tell us what you need — we'll make it happen.</p>
+  </div>
+  <div class="products-grid">
+    <div class="product-card fade-up">
+      <span class="product-icon">👕</span>
+      <div class="product-name">Tees</div>
+      <p class="product-desc">Classic and oversized cuts. The foundation of any artist merch run.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">🧥</span>
+      <div class="product-name">Hoodies</div>
+      <p class="product-desc">Pullover and zip-up styles. Heavy-weight and premium options available.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">🫧</span>
+      <div class="product-name">Crewnecks</div>
+      <p class="product-desc">Midweight fleece, perfect for all-season wear and clean graphic prints.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">🧢</span>
+      <div class="product-name">Caps &amp; Hats</div>
+      <p class="product-desc">Structured caps, dad hats, and beanies. Front or side placement.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">🛍</span>
+      <div class="product-name">Tote Bags</div>
+      <p class="product-desc">Cotton canvas totes. Practical, affordable, and very gig-table-friendly.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">🧤</span>
+      <div class="product-name">Jackets</div>
+      <p class="product-desc">Coach jackets, varsity, and windbreakers. Premium merch energy.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">👚</span>
+      <div class="product-name">Tanks &amp; Vests</div>
+      <p class="product-desc">Muscle tees and tanks. Festival-ready and summer tour essentials.</p>
+    </div>
+    <div class="product-card fade-up">
+      <span class="product-icon">✦</span>
+      <div class="product-name">Ask Us</div>
+      <p class="product-desc">Got something else in mind? We're flexible. Get in touch and we'll work it out.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="process">
+  <div class="how-left fade-up">
+    <p class="section-label">Process</p>
+    <h2 class="section-title">How It Works</h2>
+    <p>We keep it simple. No minimums that make small artists feel small. Just great merch, fast.</p>
+  </div>
+  <div class="how-right">
+    <div class="steps">
+      <div class="step fade-up">
+        <span class="step-num">01</span>
+        <div class="step-content">
+          <h3>Get a Quote</h3>
+          <p>Tell us what you need — garment type, quantity, size breakdown, and your artwork. We'll come back to you fast with pricing.</p>
+        </div>
+      </div>
+      <div class="step fade-up">
+        <span class="step-num">02</span>
+        <div class="step-content">
+          <h3>Approve Your Proof</h3>
+          <p>We'll send a mockup so you can sign off on placement, colours, and sizing before we press a single item.</p>
+        </div>
+      </div>
+      <div class="step fade-up">
+        <span class="step-num">03</span>
+        <div class="step-content">
+          <h3>We Press</h3>
+          <p>Once approved, we get to work. Heat press production typically takes 1–2 days depending on order size.</p>
+        </div>
+      </div>
+      <div class="step fade-up">
+        <span class="step-num">04</span>
+        <div class="step-content">
+          <h3>Pick Up or Ship</h3>
+          <p>Collect in Auckland or Melbourne, or we'll ship anywhere across New Zealand and Australia. 4–5 days total, start to finish.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SHIPPING -->
+<section class="shipping-section" id="shipping">
+  <p class="section-label">Delivery</p>
+  <h2 class="section-title" style="color: var(--white);">Where<br>We Ship</h2>
+  <div class="shipping-grid">
+    <div class="ship-card fade-up">
+      <span class="ship-icon">🇳🇿</span>
+      <div class="ship-title">New Zealand</div>
+      <p class="ship-detail">Nationwide shipping across Aotearoa. Overnight courier to most urban centres.</p>
+      <span class="ship-highlight">NZ Delivery</span>
+    </div>
+    <div class="ship-card fade-up">
+      <span class="ship-icon">🇦🇺</span>
+      <div class="ship-title">Australia</div>
+      <p class="ship-detail">Express post across AU. Major cities typically 2–3 business days once dispatched.</p>
+      <span class="ship-highlight">AU Delivery</span>
+    </div>
+    <div class="ship-card fade-up">
+      <span class="ship-icon">📍</span>
+      <div class="ship-title">Pick Up</div>
+      <p class="ship-detail">Collect from our Auckland or Melbourne locations. Fastest option — ready same day production finishes.</p>
+      <span class="ship-highlight">AKL &amp; MEL</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <p class="section-label">Let's work together</p>
+  <h2 class="section-title fade-up">Ready<br>to Run?</h2>
+  <p>Drop us a line with your idea, artwork, and quantity. We'll get back to you with a quote within 24 hours.</p>
+  <div>
+    <a href="mailto:hello@smallruns.co" class="cta-email">hello@smallruns.co</a>
+    <span class="cta-divider">or</span>
+    <a href="mailto:hello@smallruns.co" class="btn-primary" style="display:inline-block;">Get a Quote</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Small<span>.</span>Runs</div>
+  <div class="footer-note">© 2025 Small Runs — Auckland &amp; Melbourne</div>
+  <div class="footer-note">Artist Merch, Made Fast</div>
+</footer>
+
+<script>
+  // Intersection observer for fade-up animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, 60 * (entry.target.dataset.delay || 0));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach((el, i) => {
+    el.dataset.delay = i % 4;
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
