@@ -42,7 +42,7 @@
 
       <section id="auth" class="card" hidden>
         <h1>Sign in</h1>
-        <p class="muted">Use your Supabase email + password.</p>
+        <p class="muted">Temporary: this login is a passthrough until Supabase is set up.</p>
 
         <form id="signInForm" class="form">
           <label>
@@ -54,10 +54,10 @@
             <input id="password" type="password" autocomplete="current-password" required />
           </label>
           <div class="row">
-            <button class="primary" type="submit">Sign in</button>
+            <button class="primary" type="submit">Continue</button>
           </div>
           <p class="hint">
-            Note: user creation is controlled in Supabase. If you cannot sign in yet, you likely need to create/invite the user in the Supabase Auth dashboard first.
+            Once Supabase is configured (Settings), this becomes a real login and the dashboard will read/write your live inventory table.
           </p>
         </form>
       </section>

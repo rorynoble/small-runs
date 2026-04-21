@@ -2,6 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const LS_URL = "SMALL_RUNS_SUPABASE_URL";
 const LS_ANON = "SMALL_RUNS_SUPABASE_ANON_KEY";
+const LS_LOCAL_SESSION = "SMALL_RUNS_LOCAL_ADMIN_SESSION";
+const LS_LOCAL_INVENTORY = "SMALL_RUNS_LOCAL_INVENTORY_ITEMS";
 
 const el = {
   btnOpenSettings: document.getElementById("btnOpenSettings"),
@@ -63,6 +65,30 @@ function clearConfig() {
   localStorage.removeItem(LS_ANON);
 }
 
+function hasLocalSession() {
+  return localStorage.getItem(LS_LOCAL_SESSION) === "1";
+}
+
+function setLocalSession(on) {
+  if (on) localStorage.setItem(LS_LOCAL_SESSION, "1");
+  else localStorage.removeItem(LS_LOCAL_SESSION);
+}
+
+function readLocalInventory() {
+  try {
+    const raw = localStorage.getItem(LS_LOCAL_INVENTORY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalInventory(items) {
+  localStorage.setItem(LS_LOCAL_INVENTORY, JSON.stringify(items));
+}
+
 let supabase = null;
 
 async function ensureClient() {
@@ -76,10 +102,12 @@ async function refreshUI() {
   setError("");
   const client = await ensureClient();
   if (!client) {
-    show(el.settings, true);
-    show(el.auth, false);
-    show(el.app, false);
-    show(el.btnSignOut, false);
+    // No Supabase configured yet: allow temporary passthrough.
+    show(el.settings, false);
+    show(el.btnSignOut, hasLocalSession());
+    show(el.auth, !hasLocalSession());
+    show(el.app, hasLocalSession());
+    if (hasLocalSession()) await loadInventory();
     return;
   }
 
@@ -131,7 +159,17 @@ function escapeHtml(str) {
 async function loadInventory() {
   setError("");
   const client = await ensureClient();
-  if (!client) return;
+  if (!client) {
+    const data = readLocalInventory()
+      .slice()
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    el.inventoryRows.innerHTML = "";
+    for (const item of data) el.inventoryRows.appendChild(renderRow(item));
+    el.kpiInventoryCount.textContent = String(data.length);
+    const lowCount = data.filter((i) => Number(i.on_hand) <= Number(i.low_stock_threshold)).length;
+    el.kpiLowStock.textContent = String(lowCount);
+    return;
+  }
 
   const { data, error } = await client
     .from("inventory_items")
@@ -164,7 +202,25 @@ function openItemDialog(mode, item = null) {
 async function upsertItem() {
   setError("");
   const client = await ensureClient();
-  if (!client) return;
+  if (!client) {
+    const now = new Date().toISOString();
+    const items = readLocalInventory();
+    const id = el.itemId.value || crypto.randomUUID();
+    const next = {
+      id,
+      sku: el.itemSku.value.trim(),
+      name: el.itemName.value.trim(),
+      on_hand: Number(el.itemOnHand.value),
+      low_stock_threshold: Number(el.itemLowStock.value),
+      updated_at: now,
+    };
+    const idx = items.findIndex((i) => i.id === id);
+    if (idx >= 0) items[idx] = { ...items[idx], ...next };
+    else items.push(next);
+    writeLocalInventory(items);
+    await loadInventory();
+    return;
+  }
 
   const payload = {
     sku: el.itemSku.value.trim(),
@@ -218,7 +274,12 @@ el.signInForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   setError("");
   const client = await ensureClient();
-  if (!client) return;
+  if (!client) {
+    // Temporary passthrough mode.
+    setLocalSession(true);
+    await refreshUI();
+    return;
+  }
 
   const { error } = await client.auth.signInWithPassword({
     email: el.email.value.trim(),
@@ -233,7 +294,11 @@ el.signInForm.addEventListener("submit", async (e) => {
 
 el.btnSignOut.addEventListener("click", async () => {
   const client = await ensureClient();
-  if (!client) return;
+  if (!client) {
+    setLocalSession(false);
+    await refreshUI();
+    return;
+  }
   await client.auth.signOut();
   await refreshUI();
 });
@@ -248,7 +313,15 @@ el.inventoryRows.addEventListener("click", async (e) => {
 
   const id = btn.getAttribute("data-id");
   const client = await ensureClient();
-  if (!client) return;
+  if (!client) {
+    const item = readLocalInventory().find((i) => i.id === id);
+    if (!item) {
+      setError("Item not found (local mode). Try Refresh.");
+      return;
+    }
+    openItemDialog("edit", item);
+    return;
+  }
 
   const { data, error } = await client
     .from("inventory_items")
@@ -272,4 +345,3 @@ el.itemForm.addEventListener("submit", async (e) => {
 
 // Boot
 await refreshUI();
-
