@@ -2,30 +2,36 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const LS_URL = "SMALL_RUNS_SUPABASE_URL";
 const LS_ANON = "SMALL_RUNS_SUPABASE_ANON_KEY";
-const LS_LOCAL_SESSION = "SMALL_RUNS_LOCAL_ADMIN_SESSION";
 const LS_LOCAL_INVENTORY = "SMALL_RUNS_LOCAL_INVENTORY_ITEMS";
 
 const el = {
+  modeBadge: document.getElementById("modeBadge"),
+
   btnOpenSettings: document.getElementById("btnOpenSettings"),
+  settingsDialog: document.getElementById("settingsDialog"),
   btnCloseSettings: document.getElementById("btnCloseSettings"),
   btnClearSettings: document.getElementById("btnClearSettings"),
-  btnSignOut: document.getElementById("btnSignOut"),
-  settings: document.getElementById("settings"),
   settingsForm: document.getElementById("settingsForm"),
   supabaseUrl: document.getElementById("supabaseUrl"),
   supabaseAnonKey: document.getElementById("supabaseAnonKey"),
-  auth: document.getElementById("auth"),
+
+  btnOpenSignIn: document.getElementById("btnOpenSignIn"),
+  signInDialog: document.getElementById("signInDialog"),
+  btnCloseSignIn: document.getElementById("btnCloseSignIn"),
   signInForm: document.getElementById("signInForm"),
   email: document.getElementById("email"),
   password: document.getElementById("password"),
-  app: document.getElementById("app"),
+  btnSignOut: document.getElementById("btnSignOut"),
+
   error: document.getElementById("error"),
   btnRefresh: document.getElementById("btnRefresh"),
   btnAddItem: document.getElementById("btnAddItem"),
   inventoryRows: document.getElementById("inventoryRows"),
   kpiInventoryCount: document.getElementById("kpiInventoryCount"),
   kpiLowStock: document.getElementById("kpiLowStock"),
+
   itemDialog: document.getElementById("itemDialog"),
+  btnCloseItem: document.getElementById("btnCloseItem"),
   itemForm: document.getElementById("itemForm"),
   itemDialogTitle: document.getElementById("itemDialogTitle"),
   itemId: document.getElementById("itemId"),
@@ -35,43 +41,30 @@ const el = {
   itemLowStock: document.getElementById("itemLowStock"),
 };
 
-function show(node, yes = true) {
-  node.hidden = !yes;
-}
-
 function setError(message) {
   if (!message) {
-    show(el.error, false);
+    el.error.hidden = true;
     el.error.textContent = "";
     return;
   }
   el.error.textContent = message;
-  show(el.error, true);
+  el.error.hidden = false;
 }
 
 function getConfig() {
-  const url = localStorage.getItem(LS_URL) || "";
-  const anon = localStorage.getItem(LS_ANON) || "";
+  const url = (localStorage.getItem(LS_URL) || "").trim();
+  const anon = (localStorage.getItem(LS_ANON) || "").trim();
   return { url, anon };
 }
 
 function setConfig(url, anon) {
-  localStorage.setItem(LS_URL, url.trim());
-  localStorage.setItem(LS_ANON, anon.trim());
+  localStorage.setItem(LS_URL, String(url || "").trim());
+  localStorage.setItem(LS_ANON, String(anon || "").trim());
 }
 
 function clearConfig() {
   localStorage.removeItem(LS_URL);
   localStorage.removeItem(LS_ANON);
-}
-
-function hasLocalSession() {
-  return localStorage.getItem(LS_LOCAL_SESSION) === "1";
-}
-
-function setLocalSession(on) {
-  if (on) localStorage.setItem(LS_LOCAL_SESSION, "1");
-  else localStorage.removeItem(LS_LOCAL_SESSION);
 }
 
 function readLocalInventory() {
@@ -91,6 +84,10 @@ function writeLocalInventory(items) {
 
 let supabase = null;
 
+function resetSupabaseClient() {
+  supabase = null;
+}
+
 async function ensureClient() {
   const { url, anon } = getConfig();
   if (!url || !anon) return null;
@@ -98,53 +95,11 @@ async function ensureClient() {
   return supabase;
 }
 
-async function refreshUI() {
-  setError("");
+async function getSupabaseSession() {
   const client = await ensureClient();
-  if (!client) {
-    // No Supabase configured yet: allow temporary passthrough.
-    show(el.settings, false);
-    show(el.btnSignOut, hasLocalSession());
-    show(el.auth, !hasLocalSession());
-    show(el.app, hasLocalSession());
-    if (hasLocalSession()) await loadInventory();
-    return;
-  }
-
+  if (!client) return { client: null, session: null };
   const { data: { session } } = await client.auth.getSession();
-  if (!session) {
-    show(el.settings, false);
-    show(el.auth, true);
-    show(el.app, false);
-    show(el.btnSignOut, false);
-    return;
-  }
-
-  show(el.settings, false);
-  show(el.auth, false);
-  show(el.app, true);
-  show(el.btnSignOut, true);
-  await loadInventory();
-}
-
-function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleString();
-}
-
-function renderRow(item) {
-  const tr = document.createElement("tr");
-  const low = Number(item.on_hand) <= Number(item.low_stock_threshold);
-  tr.innerHTML = `
-    <td><code>${escapeHtml(item.sku)}</code></td>
-    <td>${escapeHtml(item.name)}</td>
-    <td class="right">${Number(item.on_hand)}</td>
-    <td class="right">${Number(item.low_stock_threshold)}${low ? " <span style=\"color:#ffb3b3\">(low)</span>" : ""}</td>
-    <td class="right">${escapeHtml(formatDate(item.updated_at))}</td>
-    <td class="right"><button class="ghost" data-action="edit" data-id="${item.id}">Edit</button></td>
-  `;
-  return tr;
+  return { client, session: session ?? null };
 }
 
 function escapeHtml(str) {
@@ -156,13 +111,70 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+function renderRow(item) {
+  const tr = document.createElement("tr");
+  const low = Number(item.on_hand) <= Number(item.low_stock_threshold);
+  tr.innerHTML = `
+    <td><code>${escapeHtml(item.sku)}</code></td>
+    <td>${escapeHtml(item.name)}</td>
+    <td class="right">${Number(item.on_hand)}</td>
+    <td class="right">${Number(item.low_stock_threshold)}${low ? " <span class=\"pill-low\">low</span>" : ""}</td>
+    <td class="right">${escapeHtml(formatDate(item.updated_at))}</td>
+    <td class="right"><button class="btn btn-ghost" data-action="edit" data-id="${item.id}">Edit</button></td>
+  `;
+  return tr;
+}
+
+async function setModeBadge() {
+  const { url, anon } = getConfig();
+  const hasSupabase = Boolean(url && anon);
+  const { session } = await getSupabaseSession();
+  if (!hasSupabase) {
+    el.modeBadge.textContent = "Local mode";
+    return;
+  }
+  if (session) {
+    el.modeBadge.textContent = "Supabase mode";
+    return;
+  }
+  el.modeBadge.textContent = "Local mode (Supabase connected)";
+}
+
+async function refreshAuthButtons() {
+  const { url, anon } = getConfig();
+  const hasSupabase = Boolean(url && anon);
+  const { session } = await getSupabaseSession();
+
+  if (!hasSupabase) {
+    el.btnOpenSignIn.hidden = true;
+    el.btnSignOut.hidden = true;
+    return;
+  }
+
+  el.btnOpenSignIn.hidden = Boolean(session);
+  el.btnSignOut.hidden = !session;
+}
+
 async function loadInventory() {
   setError("");
-  const client = await ensureClient();
-  if (!client) {
+  const { client, session } = await getSupabaseSession();
+
+  // If Supabase isn’t configured OR we’re not signed in, fall back to local.
+  if (!client || !session) {
     const data = readLocalInventory()
       .slice()
-      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+      .sort((a, b) => {
+        const at = new Date(a.updated_at || 0).getTime() || 0;
+        const bt = new Date(b.updated_at || 0).getTime() || 0;
+        return bt - at;
+      });
     el.inventoryRows.innerHTML = "";
     for (const item of data) el.inventoryRows.appendChild(renderRow(item));
     el.kpiInventoryCount.textContent = String(data.length);
@@ -201,8 +213,10 @@ function openItemDialog(mode, item = null) {
 
 async function upsertItem() {
   setError("");
-  const client = await ensureClient();
-  if (!client) {
+  const { client, session } = await getSupabaseSession();
+
+  // Local mode
+  if (!client || !session) {
     const now = new Date().toISOString();
     const items = readLocalInventory();
     const id = el.itemId.value || crypto.randomUUID();
@@ -242,42 +256,55 @@ async function upsertItem() {
   await loadInventory();
 }
 
-// Settings UI
+async function refreshTopUI() {
+  await setModeBadge();
+  await refreshAuthButtons();
+}
+
+// Settings
 el.btnOpenSettings.addEventListener("click", () => {
   const { url, anon } = getConfig();
   el.supabaseUrl.value = url;
   el.supabaseAnonKey.value = anon;
-  show(el.settings, true);
+  el.settingsDialog.showModal();
 });
 
 el.btnCloseSettings.addEventListener("click", () => {
-  show(el.settings, false);
+  el.settingsDialog.close();
 });
 
-el.btnClearSettings.addEventListener("click", () => {
+el.btnClearSettings.addEventListener("click", async () => {
   clearConfig();
-  supabase = null;
-  show(el.settings, false);
-  refreshUI();
+  resetSupabaseClient();
+  el.settingsDialog.close();
+  await refreshTopUI();
+  await loadInventory();
 });
 
 el.settingsForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   setConfig(el.supabaseUrl.value, el.supabaseAnonKey.value);
-  supabase = null;
-  show(el.settings, false);
-  await refreshUI();
+  resetSupabaseClient();
+  el.settingsDialog.close();
+  await refreshTopUI();
+  await loadInventory();
 });
 
 // Auth
+el.btnOpenSignIn.addEventListener("click", () => {
+  el.signInDialog.showModal();
+});
+
+el.btnCloseSignIn.addEventListener("click", () => {
+  el.signInDialog.close();
+});
+
 el.signInForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   setError("");
   const client = await ensureClient();
   if (!client) {
-    // Temporary passthrough mode.
-    setLocalSession(true);
-    await refreshUI();
+    setError("Connect Supabase in Settings first.");
     return;
   }
 
@@ -289,34 +316,35 @@ el.signInForm.addEventListener("submit", async (e) => {
     setError(`Sign-in failed: ${error.message}`);
     return;
   }
-  await refreshUI();
+
+  el.signInDialog.close();
+  await refreshTopUI();
+  await loadInventory();
 });
 
 el.btnSignOut.addEventListener("click", async () => {
+  setError("");
   const client = await ensureClient();
-  if (!client) {
-    setLocalSession(false);
-    await refreshUI();
-    return;
-  }
+  if (!client) return;
   await client.auth.signOut();
-  await refreshUI();
+  await refreshTopUI();
+  await loadInventory();
 });
 
-// App actions
+// Inventory actions
 el.btnRefresh.addEventListener("click", () => loadInventory());
 el.btnAddItem.addEventListener("click", () => openItemDialog("add"));
 
 el.inventoryRows.addEventListener("click", async (e) => {
   const btn = e.target?.closest?.("button[data-action='edit']");
   if (!btn) return;
-
   const id = btn.getAttribute("data-id");
-  const client = await ensureClient();
-  if (!client) {
+
+  const { client, session } = await getSupabaseSession();
+  if (!client || !session) {
     const item = readLocalInventory().find((i) => i.id === id);
     if (!item) {
-      setError("Item not found (local mode). Try Refresh.");
+      setError("Item not found (local mode). Hit Refresh.");
       return;
     }
     openItemDialog("edit", item);
@@ -335,8 +363,11 @@ el.inventoryRows.addEventListener("click", async (e) => {
   openItemDialog("edit", data);
 });
 
+el.btnCloseItem.addEventListener("click", () => {
+  el.itemDialog.close();
+});
+
 el.itemForm.addEventListener("submit", async (e) => {
-  // method=dialog will close automatically, but we want to block close on error.
   e.preventDefault();
   await upsertItem();
   if (!el.error.hidden) return;
@@ -344,4 +375,6 @@ el.itemForm.addEventListener("submit", async (e) => {
 });
 
 // Boot
-await refreshUI();
+await refreshTopUI();
+await loadInventory();
+

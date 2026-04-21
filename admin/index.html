@@ -3,138 +3,205 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Small Runs Admin</title>
+    <title>Small Runs — Admin</title>
     <meta name="robots" content="noindex,nofollow" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="container">
-      <header class="header">
-        <a class="brand" href="../">Small Runs</a>
-        <div class="spacer"></div>
-        <button id="btnOpenSettings" class="ghost" type="button">Settings</button>
-        <button id="btnSignOut" class="ghost" type="button" hidden>Sign out</button>
-      </header>
+    <nav>
+      <a class="nav-logo" href="../">Small<span>.Runs</span></a>
 
-      <section id="settings" class="card" hidden>
-        <h1>Admin settings</h1>
-        <p class="muted">
-          This admin uses Supabase for login and data. Paste your Supabase project URL and anon key here.
-          These are stored in your browser <code>localStorage</code> on this device.
+      <ul class="nav-links">
+        <li><a href="#inventory">Inventory</a></li>
+        <li><a href="#sales">Sales</a></li>
+        <li><a href="#orders">Orders</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <span id="modeBadge" class="badge">Local mode</span>
+        <button id="btnOpenSignIn" class="btn btn-ghost" type="button">Sign in</button>
+        <button id="btnSignOut" class="btn btn-ghost" type="button" hidden>Sign out</button>
+        <button id="btnOpenSettings" class="btn btn-primary" type="button">Settings</button>
+      </div>
+    </nav>
+
+    <main class="page">
+      <div class="wrap">
+        <section class="left">
+          <div class="tag">Admin portal</div>
+          <h1 class="title">YourMerch,<br /><em>Managed</em>.</h1>
+          <p class="sub">
+            Inventory and sales dashboard for Small Runs. Right now it runs in local mode (your browser) until you connect Supabase.
+          </p>
+
+          <div class="kpis" aria-label="Key metrics">
+            <div class="kpi">
+              <div id="kpiInventoryCount" class="kpi-num">–</div>
+              <div class="kpi-label">Inventory items</div>
+            </div>
+            <div class="kpi">
+              <div id="kpiLowStock" class="kpi-num">–</div>
+              <div class="kpi-label">Low stock</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-num">—</div>
+              <div class="kpi-label">Revenue (coming soon)</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-num">—</div>
+              <div class="kpi-label">Orders (coming soon)</div>
+            </div>
+          </div>
+
+          <div id="sales" style="margin-top: 28px">
+            <div class="tag">Sales</div>
+            <p class="sub">
+              Placeholder for now. When you decide where checkout lives (Stripe/Shopify/etc), we’ll pipe orders + revenue into here.
+            </p>
+          </div>
+        </section>
+
+        <section class="right" id="inventory">
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">Inventory</div>
+              <div class="panel-actions">
+                <button id="btnRefresh" class="btn btn-ghost" type="button">Refresh</button>
+                <button id="btnAddItem" class="btn btn-primary" type="button">Add item</button>
+              </div>
+            </div>
+
+            <div class="dialog-body">
+              <div id="error" class="error" hidden></div>
+              <p class="muted" style="margin: 0 0 14px">
+                Tip: keep SKUs consistent (e.g. <code>TEE-BLK-M</code>). Low stock flags when <code>on_hand ≤ threshold</code>.
+              </p>
+            </div>
+
+            <div class="table-wrap">
+              <table aria-label="Inventory table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th class="right">On hand</th>
+                    <th class="right">Low stock</th>
+                    <th class="right">Updated</th>
+                    <th class="right">Edit</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryRows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="orders" style="margin-top: 22px">
+            <div class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Orders</div>
+              </div>
+              <div class="dialog-body">
+                <p class="sub" style="margin: 0">
+                  Coming soon.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Settings -->
+    <dialog id="settingsDialog">
+      <div class="dialog-head">
+        <h2>Settings</h2>
+        <button id="btnCloseSettings" class="btn btn-ghost" type="button">Close</button>
+      </div>
+      <div class="dialog-body">
+        <p class="muted" style="margin-top: 0">
+          Connect Supabase when you’re ready. These values are stored in your browser <code>localStorage</code> on this device.
         </p>
-
         <form id="settingsForm" class="form">
           <label>
             Supabase URL
-            <input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co" required />
+            <input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co" />
           </label>
           <label>
             Supabase anon key
-            <textarea id="supabaseAnonKey" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required></textarea>
+            <textarea id="supabaseAnonKey" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
           </label>
           <div class="row">
-            <button class="primary" type="submit">Save</button>
-            <button id="btnCloseSettings" class="ghost" type="button">Close</button>
-            <button id="btnClearSettings" class="danger" type="button">Clear</button>
+            <button class="btn btn-primary" type="submit">Save</button>
+            <button id="btnClearSettings" class="btn" type="button">Clear</button>
           </div>
         </form>
-      </section>
+      </div>
+    </dialog>
 
-      <section id="auth" class="card" hidden>
-        <h1>Sign in</h1>
-        <p class="muted">Temporary: this login is a passthrough until Supabase is set up.</p>
-
+    <!-- Sign in -->
+    <dialog id="signInDialog">
+      <div class="dialog-head">
+        <h2>Sign in</h2>
+        <button id="btnCloseSignIn" class="btn btn-ghost" type="button">Close</button>
+      </div>
+      <div class="dialog-body">
+        <p class="muted" style="margin-top: 0">
+          If Supabase isn’t connected yet, you don’t need this.
+        </p>
         <form id="signInForm" class="form">
           <label>
             Email
-            <input id="email" type="email" autocomplete="username" required />
+            <input id="email" type="email" autocomplete="username" />
           </label>
           <label>
             Password
-            <input id="password" type="password" autocomplete="current-password" required />
+            <input id="password" type="password" autocomplete="current-password" />
           </label>
           <div class="row">
-            <button class="primary" type="submit">Continue</button>
+            <button class="btn btn-primary" type="submit">Sign in</button>
           </div>
-          <p class="hint">
-            Once Supabase is configured (Settings), this becomes a real login and the dashboard will read/write your live inventory table.
-          </p>
         </form>
-      </section>
+      </div>
+    </dialog>
 
-      <section id="app" class="card" hidden>
-        <h1>Dashboard</h1>
-
-        <div class="kpis">
-          <div class="kpi">
-            <div class="kpiLabel">Inventory items</div>
-            <div id="kpiInventoryCount" class="kpiValue">–</div>
-          </div>
-          <div class="kpi">
-            <div class="kpiLabel">Low stock</div>
-            <div id="kpiLowStock" class="kpiValue">–</div>
-          </div>
-          <div class="kpi">
-            <div class="kpiLabel">Sales (placeholder)</div>
-            <div class="kpiValue">Coming soon</div>
-          </div>
-        </div>
-
-        <hr />
-
-        <h2>Inventory</h2>
-        <div class="row">
-          <button id="btnRefresh" class="ghost" type="button">Refresh</button>
-          <button id="btnAddItem" class="primary" type="button">Add item</button>
-        </div>
-
-        <div id="error" class="error" hidden></div>
-
-        <div class="tableWrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>SKU</th>
-                <th>Name</th>
-                <th class="right">On hand</th>
-                <th class="right">Low stock</th>
-                <th class="right">Updated</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="inventoryRows"></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-
-    <dialog id="itemDialog" class="dialog">
-      <form id="itemForm" method="dialog" class="form">
+    <!-- Add/Edit item -->
+    <dialog id="itemDialog">
+      <div class="dialog-head">
         <h2 id="itemDialogTitle">Add item</h2>
-        <input id="itemId" type="hidden" />
-        <label>
-          SKU
-          <input id="itemSku" type="text" required />
-        </label>
-        <label>
-          Name
-          <input id="itemName" type="text" required />
-        </label>
-        <label>
-          On hand
-          <input id="itemOnHand" type="number" min="0" step="1" required />
-        </label>
-        <label>
-          Low stock threshold
-          <input id="itemLowStock" type="number" min="0" step="1" required />
-        </label>
-        <div class="row">
-          <button class="primary" value="save">Save</button>
-          <button class="ghost" value="cancel">Cancel</button>
-        </div>
-      </form>
+        <button id="btnCloseItem" class="btn btn-ghost" type="button">Close</button>
+      </div>
+      <div class="dialog-body">
+        <form id="itemForm" class="form">
+          <input id="itemId" type="hidden" />
+          <label>
+            SKU
+            <input id="itemSku" type="text" required />
+          </label>
+          <label>
+            Name
+            <input id="itemName" type="text" required />
+          </label>
+          <label>
+            On hand
+            <input id="itemOnHand" type="number" min="0" step="1" required />
+          </label>
+          <label>
+            Low stock threshold
+            <input id="itemLowStock" type="number" min="0" step="1" required />
+          </label>
+          <div class="row">
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </form>
+      </div>
     </dialog>
 
     <script type="module" src="./app.js"></script>
   </body>
 </html>
+
