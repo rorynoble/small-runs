@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Small Runs — Admin</title>
+    <title>Small Runs — Order</title>
     <meta name="robots" content="noindex,nofollow" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,189 +17,99 @@
       <a class="nav-logo" href="../">Small<span>.Runs</span></a>
 
       <ul class="nav-links">
-        <li><a href="#inventory">Inventory</a></li>
-        <li><a href="#sales">Sales</a></li>
-        <li><a href="#orders">Orders</a></li>
+        <li><a href="#select">Select</a></li>
+        <li><a href="#sizes">Sizes</a></li>
+        <li><a href="#upload">Upload</a></li>
       </ul>
 
       <div class="nav-right">
-        <span id="modeBadge" class="badge">Local mode</span>
-        <button id="btnOpenSignIn" class="btn btn-ghost" type="button">Sign in</button>
-        <button id="btnSignOut" class="btn btn-ghost" type="button" hidden>Sign out</button>
-        <button id="btnOpenSettings" class="btn btn-primary" type="button">Settings</button>
+        <span id="orderBadge" class="badge">Draft order</span>
+        <button id="btnReset" class="btn btn-primary" type="button">Reset</button>
       </div>
     </nav>
 
     <main class="page">
       <div class="wrap">
         <section class="left">
-          <div class="tag">Admin portal</div>
-          <h1 class="title">YourMerch,<br /><em>Managed</em>.</h1>
+          <div class="tag">Ordering</div>
+          <h1 class="title">BuildYour<br /><em>Run</em>.</h1>
           <p class="sub">
-            Inventory and sales dashboard for Small Runs. Right now it runs in local mode (your browser) until you connect Supabase.
+            Select products, enter size quantities, then upload your logo. This is a draft builder for now.
           </p>
 
           <div class="kpis" aria-label="Key metrics">
             <div class="kpi">
-              <div id="kpiInventoryCount" class="kpi-num">–</div>
-              <div class="kpi-label">Inventory items</div>
+              <div id="kpiProducts" class="kpi-num">0</div>
+              <div class="kpi-label">Products selected</div>
             </div>
             <div class="kpi">
-              <div id="kpiLowStock" class="kpi-num">–</div>
-              <div class="kpi-label">Low stock</div>
+              <div id="kpiUnits" class="kpi-num">0</div>
+              <div class="kpi-label">Total units</div>
+            </div>
+            <div class="kpi">
+              <div id="kpiLogo" class="kpi-num">—</div>
+              <div class="kpi-label">Logo</div>
             </div>
             <div class="kpi">
               <div class="kpi-num">—</div>
-              <div class="kpi-label">Revenue (coming soon)</div>
-            </div>
-            <div class="kpi">
-              <div class="kpi-num">—</div>
-              <div class="kpi-label">Orders (coming soon)</div>
+              <div class="kpi-label">Quote (later)</div>
             </div>
           </div>
 
-          <div id="sales" style="margin-top: 28px">
-            <div class="tag">Sales</div>
-            <p class="sub">
-              Placeholder for now. When you decide where checkout lives (Stripe/Shopify/etc), we’ll pipe orders + revenue into here.
-            </p>
+          <div style="margin-top: 28px">
+            <div class="tag">Notes</div>
+            <p class="sub">Add print placement, colourways, and any special instructions.</p>
+            <textarea id="notes" class="notes" rows="5" placeholder="e.g. Left chest + back print, 1-colour white, 6 colourways..."></textarea>
           </div>
         </section>
 
-        <section class="right" id="inventory">
-          <div class="panel">
+        <section class="right">
+          <div id="select" class="panel">
             <div class="panel-head">
-              <div class="panel-title">Inventory</div>
+              <div class="panel-title">1) Select products</div>
               <div class="panel-actions">
-                <button id="btnRefresh" class="btn btn-ghost" type="button">Refresh</button>
-                <button id="btnAddItem" class="btn btn-primary" type="button">Add item</button>
+                <span class="muted" style="font-size: 12px">Multi-select</span>
               </div>
             </div>
-
             <div class="dialog-body">
-              <div id="error" class="error" hidden></div>
-              <p class="muted" style="margin: 0 0 14px">
-                Tip: keep SKUs consistent (e.g. <code>TEE-BLK-M</code>). Low stock flags when <code>on_hand ≤ threshold</code>.
-              </p>
-            </div>
-
-            <div class="table-wrap">
-              <table aria-label="Inventory table">
-                <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>Name</th>
-                    <th class="right">On hand</th>
-                    <th class="right">Low stock</th>
-                    <th class="right">Updated</th>
-                    <th class="right">Edit</th>
-                  </tr>
-                </thead>
-                <tbody id="inventoryRows"></tbody>
-              </table>
+              <div id="productGrid" class="select-grid" aria-label="Product selection"></div>
             </div>
           </div>
 
-          <div id="orders" style="margin-top: 22px">
-            <div class="panel">
-              <div class="panel-head">
-                <div class="panel-title">Orders</div>
+          <div id="sizes" class="panel" style="margin-top: 18px">
+            <div class="panel-head">
+              <div class="panel-title">2) Sizes + quantities</div>
+              <div class="panel-actions">
+                <button id="btnCopy" class="btn btn-ghost" type="button">Copy summary</button>
               </div>
-              <div class="dialog-body">
-                <p class="sub" style="margin: 0">
-                  Coming soon.
-                </p>
+            </div>
+            <div class="dialog-body">
+              <div id="sizesEmpty" class="muted">Select a product above to start.</div>
+              <div id="lineItems" class="line-items"></div>
+              <div id="copyToast" class="muted" style="margin-top: 10px" hidden>Copied.</div>
+            </div>
+          </div>
+
+          <div id="upload" class="panel" style="margin-top: 18px">
+            <div class="panel-head">
+              <div class="panel-title">3) Upload logo</div>
+            </div>
+            <div class="dialog-body">
+              <div class="row">
+                <label class="btn btn-primary" style="display:inline-flex; align-items:center; gap:10px">
+                  Upload logo
+                  <input id="logoInput" type="file" accept="image/*,.pdf" hidden />
+                </label>
+                <span id="logoName" class="muted">No file selected</span>
               </div>
+              <p class="muted" style="margin: 12px 0 0">
+                Note: this page doesn’t send files anywhere yet, it just captures the file name for the order summary.
+              </p>
             </div>
           </div>
         </section>
       </div>
     </main>
-
-    <!-- Settings -->
-    <dialog id="settingsDialog">
-      <div class="dialog-head">
-        <h2>Settings</h2>
-        <button id="btnCloseSettings" class="btn btn-ghost" type="button">Close</button>
-      </div>
-      <div class="dialog-body">
-        <p class="muted" style="margin-top: 0">
-          Connect Supabase when you’re ready. These values are stored in your browser <code>localStorage</code> on this device.
-        </p>
-        <form id="settingsForm" class="form">
-          <label>
-            Supabase URL
-            <input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co" />
-          </label>
-          <label>
-            Supabase anon key
-            <textarea id="supabaseAnonKey" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
-          </label>
-          <div class="row">
-            <button class="btn btn-primary" type="submit">Save</button>
-            <button id="btnClearSettings" class="btn" type="button">Clear</button>
-          </div>
-        </form>
-      </div>
-    </dialog>
-
-    <!-- Sign in -->
-    <dialog id="signInDialog">
-      <div class="dialog-head">
-        <h2>Sign in</h2>
-        <button id="btnCloseSignIn" class="btn btn-ghost" type="button">Close</button>
-      </div>
-      <div class="dialog-body">
-        <p class="muted" style="margin-top: 0">
-          If Supabase isn’t connected yet, you don’t need this.
-        </p>
-        <form id="signInForm" class="form">
-          <label>
-            Email
-            <input id="email" type="email" autocomplete="username" />
-          </label>
-          <label>
-            Password
-            <input id="password" type="password" autocomplete="current-password" />
-          </label>
-          <div class="row">
-            <button class="btn btn-primary" type="submit">Sign in</button>
-          </div>
-        </form>
-      </div>
-    </dialog>
-
-    <!-- Add/Edit item -->
-    <dialog id="itemDialog">
-      <div class="dialog-head">
-        <h2 id="itemDialogTitle">Add item</h2>
-        <button id="btnCloseItem" class="btn btn-ghost" type="button">Close</button>
-      </div>
-      <div class="dialog-body">
-        <form id="itemForm" class="form">
-          <input id="itemId" type="hidden" />
-          <label>
-            SKU
-            <input id="itemSku" type="text" required />
-          </label>
-          <label>
-            Name
-            <input id="itemName" type="text" required />
-          </label>
-          <label>
-            On hand
-            <input id="itemOnHand" type="number" min="0" step="1" required />
-          </label>
-          <label>
-            Low stock threshold
-            <input id="itemLowStock" type="number" min="0" step="1" required />
-          </label>
-          <div class="row">
-            <button class="btn btn-primary" type="submit">Save</button>
-          </div>
-        </form>
-      </div>
-    </dialog>
 
     <script type="module" src="./app.js"></script>
   </body>

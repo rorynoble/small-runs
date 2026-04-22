@@ -1,105 +1,56 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+const LS_ORDER = "SMALL_RUNS_ORDER_STATE_V1";
 
-const LS_URL = "SMALL_RUNS_SUPABASE_URL";
-const LS_ANON = "SMALL_RUNS_SUPABASE_ANON_KEY";
-const LS_LOCAL_INVENTORY = "SMALL_RUNS_LOCAL_INVENTORY_ITEMS";
+const PRODUCTS = [
+  { id: "tshirt", name: "T Shirt", sizes: ["XS", "S", "M", "L", "XL", "2XL"] },
+  { id: "hoodie", name: "Hoodie", sizes: ["XS", "S", "M", "L", "XL", "2XL"] },
+  { id: "sweatshirt", name: "Sweatshirt", sizes: ["XS", "S", "M", "L", "XL", "2XL"] },
+  { id: "jacket", name: "Jacket", sizes: ["XS", "S", "M", "L", "XL", "2XL"] },
+  { id: "trucker_cap", name: "Trucker Cap", sizes: ["OS"] },
+  { id: "bucket_hat", name: "Bucket Hat", sizes: ["OS"] },
+];
 
 const el = {
-  modeBadge: document.getElementById("modeBadge"),
-
-  btnOpenSettings: document.getElementById("btnOpenSettings"),
-  settingsDialog: document.getElementById("settingsDialog"),
-  btnCloseSettings: document.getElementById("btnCloseSettings"),
-  btnClearSettings: document.getElementById("btnClearSettings"),
-  settingsForm: document.getElementById("settingsForm"),
-  supabaseUrl: document.getElementById("supabaseUrl"),
-  supabaseAnonKey: document.getElementById("supabaseAnonKey"),
-
-  btnOpenSignIn: document.getElementById("btnOpenSignIn"),
-  signInDialog: document.getElementById("signInDialog"),
-  btnCloseSignIn: document.getElementById("btnCloseSignIn"),
-  signInForm: document.getElementById("signInForm"),
-  email: document.getElementById("email"),
-  password: document.getElementById("password"),
-  btnSignOut: document.getElementById("btnSignOut"),
-
-  error: document.getElementById("error"),
-  btnRefresh: document.getElementById("btnRefresh"),
-  btnAddItem: document.getElementById("btnAddItem"),
-  inventoryRows: document.getElementById("inventoryRows"),
-  kpiInventoryCount: document.getElementById("kpiInventoryCount"),
-  kpiLowStock: document.getElementById("kpiLowStock"),
-
-  itemDialog: document.getElementById("itemDialog"),
-  btnCloseItem: document.getElementById("btnCloseItem"),
-  itemForm: document.getElementById("itemForm"),
-  itemDialogTitle: document.getElementById("itemDialogTitle"),
-  itemId: document.getElementById("itemId"),
-  itemSku: document.getElementById("itemSku"),
-  itemName: document.getElementById("itemName"),
-  itemOnHand: document.getElementById("itemOnHand"),
-  itemLowStock: document.getElementById("itemLowStock"),
+  productGrid: document.getElementById("productGrid"),
+  lineItems: document.getElementById("lineItems"),
+  sizesEmpty: document.getElementById("sizesEmpty"),
+  btnReset: document.getElementById("btnReset"),
+  btnCopy: document.getElementById("btnCopy"),
+  copyToast: document.getElementById("copyToast"),
+  notes: document.getElementById("notes"),
+  logoInput: document.getElementById("logoInput"),
+  logoName: document.getElementById("logoName"),
+  kpiProducts: document.getElementById("kpiProducts"),
+  kpiUnits: document.getElementById("kpiUnits"),
+  kpiLogo: document.getElementById("kpiLogo"),
+  orderBadge: document.getElementById("orderBadge"),
 };
 
-function setError(message) {
-  if (!message) {
-    el.error.hidden = true;
-    el.error.textContent = "";
-    return;
-  }
-  el.error.textContent = message;
-  el.error.hidden = false;
+function blankState() {
+  return {
+    selected: {}, // { [productId]: { sizes: { [size]: number } } }
+    notes: "",
+    logoName: "",
+  };
 }
 
-function getConfig() {
-  const url = (localStorage.getItem(LS_URL) || "").trim();
-  const anon = (localStorage.getItem(LS_ANON) || "").trim();
-  return { url, anon };
-}
-
-function setConfig(url, anon) {
-  localStorage.setItem(LS_URL, String(url || "").trim());
-  localStorage.setItem(LS_ANON, String(anon || "").trim());
-}
-
-function clearConfig() {
-  localStorage.removeItem(LS_URL);
-  localStorage.removeItem(LS_ANON);
-}
-
-function readLocalInventory() {
+function loadState() {
   try {
-    const raw = localStorage.getItem(LS_LOCAL_INVENTORY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return [];
-    return parsed;
+    const raw = localStorage.getItem(LS_ORDER);
+    if (!raw) return blankState();
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return blankState();
+    return {
+      selected: parsed.selected && typeof parsed.selected === "object" ? parsed.selected : {},
+      notes: typeof parsed.notes === "string" ? parsed.notes : "",
+      logoName: typeof parsed.logoName === "string" ? parsed.logoName : "",
+    };
   } catch {
-    return [];
+    return blankState();
   }
 }
 
-function writeLocalInventory(items) {
-  localStorage.setItem(LS_LOCAL_INVENTORY, JSON.stringify(items));
-}
-
-let supabase = null;
-
-function resetSupabaseClient() {
-  supabase = null;
-}
-
-async function ensureClient() {
-  const { url, anon } = getConfig();
-  if (!url || !anon) return null;
-  if (!supabase) supabase = createClient(url, anon);
-  return supabase;
-}
-
-async function getSupabaseSession() {
-  const client = await ensureClient();
-  if (!client) return { client: null, session: null };
-  const { data: { session } } = await client.auth.getSession();
-  return { client, session: session ?? null };
+function saveState() {
+  localStorage.setItem(LS_ORDER, JSON.stringify(state));
 }
 
 function escapeHtml(str) {
@@ -111,270 +62,195 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+function productById(id) {
+  return PRODUCTS.find((p) => p.id === id) || null;
 }
 
-function renderRow(item) {
-  const tr = document.createElement("tr");
-  const low = Number(item.on_hand) <= Number(item.low_stock_threshold);
-  tr.innerHTML = `
-    <td><code>${escapeHtml(item.sku)}</code></td>
-    <td>${escapeHtml(item.name)}</td>
-    <td class="right">${Number(item.on_hand)}</td>
-    <td class="right">${Number(item.low_stock_threshold)}${low ? " <span class=\"pill-low\">low</span>" : ""}</td>
-    <td class="right">${escapeHtml(formatDate(item.updated_at))}</td>
-    <td class="right"><button class="btn btn-ghost" data-action="edit" data-id="${item.id}">Edit</button></td>
-  `;
-  return tr;
+function selectedIds() {
+  return Object.keys(state.selected);
 }
 
-async function setModeBadge() {
-  const { url, anon } = getConfig();
-  const hasSupabase = Boolean(url && anon);
-  const { session } = await getSupabaseSession();
-  if (!hasSupabase) {
-    el.modeBadge.textContent = "Local mode";
-    return;
-  }
-  if (session) {
-    el.modeBadge.textContent = "Supabase mode";
-    return;
-  }
-  el.modeBadge.textContent = "Local mode (Supabase connected)";
+function getUnitsForProduct(productId) {
+  const entry = state.selected[productId];
+  if (!entry) return 0;
+  return Object.values(entry.sizes || {}).reduce((sum, n) => sum + (Number(n) || 0), 0);
 }
 
-async function refreshAuthButtons() {
-  const { url, anon } = getConfig();
-  const hasSupabase = Boolean(url && anon);
-  const { session } = await getSupabaseSession();
-
-  if (!hasSupabase) {
-    el.btnOpenSignIn.hidden = true;
-    el.btnSignOut.hidden = true;
-    return;
-  }
-
-  el.btnOpenSignIn.hidden = Boolean(session);
-  el.btnSignOut.hidden = !session;
+function getTotalUnits() {
+  return selectedIds().reduce((sum, id) => sum + getUnitsForProduct(id), 0);
 }
 
-async function loadInventory() {
-  setError("");
-  const { client, session } = await getSupabaseSession();
-
-  // If Supabase isn’t configured OR we’re not signed in, fall back to local.
-  if (!client || !session) {
-    const data = readLocalInventory()
-      .slice()
-      .sort((a, b) => {
-        const at = new Date(a.updated_at || 0).getTime() || 0;
-        const bt = new Date(b.updated_at || 0).getTime() || 0;
-        return bt - at;
-      });
-    el.inventoryRows.innerHTML = "";
-    for (const item of data) el.inventoryRows.appendChild(renderRow(item));
-    el.kpiInventoryCount.textContent = String(data.length);
-    const lowCount = data.filter((i) => Number(i.on_hand) <= Number(i.low_stock_threshold)).length;
-    el.kpiLowStock.textContent = String(lowCount);
-    return;
+function ensureEntry(productId) {
+  const p = productById(productId);
+  if (!p) return;
+  if (!state.selected[productId]) {
+    state.selected[productId] = { sizes: {} };
   }
-
-  const { data, error } = await client
-    .from("inventory_items")
-    .select("id, sku, name, on_hand, low_stock_threshold, updated_at")
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    setError(`Inventory load failed: ${error.message}`);
-    return;
+  for (const size of p.sizes) {
+    if (state.selected[productId].sizes[size] == null) state.selected[productId].sizes[size] = 0;
   }
-
-  el.inventoryRows.innerHTML = "";
-  for (const item of data) el.inventoryRows.appendChild(renderRow(item));
-
-  el.kpiInventoryCount.textContent = String(data.length);
-  const lowCount = data.filter((i) => Number(i.on_hand) <= Number(i.low_stock_threshold)).length;
-  el.kpiLowStock.textContent = String(lowCount);
 }
 
-function openItemDialog(mode, item = null) {
-  el.itemDialogTitle.textContent = mode === "edit" ? "Edit item" : "Add item";
-  el.itemId.value = item?.id ?? "";
-  el.itemSku.value = item?.sku ?? "";
-  el.itemName.value = item?.name ?? "";
-  el.itemOnHand.value = item?.on_hand ?? 0;
-  el.itemLowStock.value = item?.low_stock_threshold ?? 0;
-  el.itemDialog.showModal();
+function toggleProduct(productId) {
+  if (state.selected[productId]) {
+    delete state.selected[productId];
+  } else {
+    ensureEntry(productId);
+  }
+  saveState();
+  render();
 }
 
-async function upsertItem() {
-  setError("");
-  const { client, session } = await getSupabaseSession();
-
-  // Local mode
-  if (!client || !session) {
-    const now = new Date().toISOString();
-    const items = readLocalInventory();
-    const id = el.itemId.value || crypto.randomUUID();
-    const next = {
-      id,
-      sku: el.itemSku.value.trim(),
-      name: el.itemName.value.trim(),
-      on_hand: Number(el.itemOnHand.value),
-      low_stock_threshold: Number(el.itemLowStock.value),
-      updated_at: now,
-    };
-    const idx = items.findIndex((i) => i.id === id);
-    if (idx >= 0) items[idx] = { ...items[idx], ...next };
-    else items.push(next);
-    writeLocalInventory(items);
-    await loadInventory();
-    return;
-  }
-
-  const payload = {
-    sku: el.itemSku.value.trim(),
-    name: el.itemName.value.trim(),
-    on_hand: Number(el.itemOnHand.value),
-    low_stock_threshold: Number(el.itemLowStock.value),
-  };
-  const id = el.itemId.value || null;
-
-  const query = id
-    ? client.from("inventory_items").update(payload).eq("id", id)
-    : client.from("inventory_items").insert(payload);
-
-  const { error } = await query;
-  if (error) {
-    setError(`Save failed: ${error.message}`);
-    return;
-  }
-  await loadInventory();
+function setSizeQty(productId, size, qty) {
+  ensureEntry(productId);
+  state.selected[productId].sizes[size] = Math.max(0, Math.floor(Number(qty) || 0));
+  saveState();
+  renderKpis();
+  renderLineItems();
 }
 
-async function refreshTopUI() {
-  await setModeBadge();
-  await refreshAuthButtons();
+function renderProductGrid() {
+  el.productGrid.innerHTML = "";
+  for (const p of PRODUCTS) {
+    const div = document.createElement("div");
+    div.className = `tile${state.selected[p.id] ? " selected" : ""}`;
+    div.setAttribute("role", "button");
+    div.setAttribute("tabindex", "0");
+    div.dataset.id = p.id;
+    div.innerHTML = `
+      <div class="tile-title">${escapeHtml(p.name)}</div>
+      <div class="tile-sub">${p.sizes.includes("OS") ? "One size" : "Sizes XS–2XL"}</div>
+    `;
+    div.addEventListener("click", () => toggleProduct(p.id));
+    div.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleProduct(p.id);
+      }
+    });
+    el.productGrid.appendChild(div);
+  }
 }
 
-// Settings
-el.btnOpenSettings.addEventListener("click", () => {
-  const { url, anon } = getConfig();
-  el.supabaseUrl.value = url;
-  el.supabaseAnonKey.value = anon;
-  el.settingsDialog.showModal();
-});
+function renderLineItems() {
+  const ids = selectedIds();
+  el.sizesEmpty.hidden = ids.length !== 0;
+  el.lineItems.innerHTML = "";
 
-el.btnCloseSettings.addEventListener("click", () => {
-  el.settingsDialog.close();
-});
+  for (const id of ids) {
+    const p = productById(id);
+    if (!p) continue;
+    ensureEntry(id);
 
-el.btnClearSettings.addEventListener("click", async () => {
-  clearConfig();
-  resetSupabaseClient();
-  el.settingsDialog.close();
-  await refreshTopUI();
-  await loadInventory();
-});
+    const total = getUnitsForProduct(id);
+    const line = document.createElement("div");
+    line.className = "line";
+    line.innerHTML = `
+      <div class="line-head">
+        <div class="line-name">${escapeHtml(p.name)}</div>
+        <div class="line-total">${total}</div>
+      </div>
+      <div class="sizes-grid" data-product="${id}"></div>
+    `;
 
-el.settingsForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  setConfig(el.supabaseUrl.value, el.supabaseAnonKey.value);
-  resetSupabaseClient();
-  el.settingsDialog.close();
-  await refreshTopUI();
-  await loadInventory();
-});
-
-// Auth
-el.btnOpenSignIn.addEventListener("click", () => {
-  el.signInDialog.showModal();
-});
-
-el.btnCloseSignIn.addEventListener("click", () => {
-  el.signInDialog.close();
-});
-
-el.signInForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  setError("");
-  const client = await ensureClient();
-  if (!client) {
-    setError("Connect Supabase in Settings first.");
-    return;
-  }
-
-  const { error } = await client.auth.signInWithPassword({
-    email: el.email.value.trim(),
-    password: el.password.value,
-  });
-  if (error) {
-    setError(`Sign-in failed: ${error.message}`);
-    return;
-  }
-
-  el.signInDialog.close();
-  await refreshTopUI();
-  await loadInventory();
-});
-
-el.btnSignOut.addEventListener("click", async () => {
-  setError("");
-  const client = await ensureClient();
-  if (!client) return;
-  await client.auth.signOut();
-  await refreshTopUI();
-  await loadInventory();
-});
-
-// Inventory actions
-el.btnRefresh.addEventListener("click", () => loadInventory());
-el.btnAddItem.addEventListener("click", () => openItemDialog("add"));
-
-el.inventoryRows.addEventListener("click", async (e) => {
-  const btn = e.target?.closest?.("button[data-action='edit']");
-  if (!btn) return;
-  const id = btn.getAttribute("data-id");
-
-  const { client, session } = await getSupabaseSession();
-  if (!client || !session) {
-    const item = readLocalInventory().find((i) => i.id === id);
-    if (!item) {
-      setError("Item not found (local mode). Hit Refresh.");
-      return;
+    const grid = line.querySelector(".sizes-grid");
+    for (const size of p.sizes) {
+      const wrap = document.createElement("div");
+      wrap.className = "size";
+      const value = Number(state.selected[id].sizes[size] || 0);
+      wrap.innerHTML = `
+        <label>${escapeHtml(size)}</label>
+        <input inputmode="numeric" pattern="[0-9]*" type="number" min="0" step="1" value="${value}" data-size="${escapeHtml(size)}" />
+      `;
+      const input = wrap.querySelector("input");
+      input.addEventListener("input", () => setSizeQty(id, size, input.value));
+      grid.appendChild(wrap);
     }
-    openItemDialog("edit", item);
-    return;
-  }
 
-  const { data, error } = await client
-    .from("inventory_items")
-    .select("id, sku, name, on_hand, low_stock_threshold")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) {
-    setError(`Load failed: ${error.message}`);
-    return;
+    el.lineItems.appendChild(line);
   }
-  openItemDialog("edit", data);
+}
+
+function renderKpis() {
+  const ids = selectedIds();
+  el.kpiProducts.textContent = String(ids.length);
+  el.kpiUnits.textContent = String(getTotalUnits());
+  el.kpiLogo.textContent = state.logoName ? "Yes" : "—";
+  el.logoName.textContent = state.logoName || "No file selected";
+
+  if (ids.length === 0) el.orderBadge.textContent = "Draft order";
+  else el.orderBadge.textContent = "Draft order";
+}
+
+function buildSummaryText() {
+  const ids = selectedIds();
+  const lines = [];
+  lines.push("SMALL RUNS ORDER");
+  lines.push("");
+  for (const id of ids) {
+    const p = productById(id);
+    if (!p) continue;
+    const sizes = state.selected[id]?.sizes || {};
+    const parts = p.sizes
+      .map((s) => ({ s, n: Number(sizes[s] || 0) }))
+      .filter((x) => x.n > 0)
+      .map((x) => `${x.s}:${x.n}`);
+    lines.push(`${p.name}: ${parts.length ? parts.join(" ") : "(no qty yet)"}`);
+  }
+  lines.push("");
+  lines.push(`Total units: ${getTotalUnits()}`);
+  lines.push(`Logo: ${state.logoName || "(not selected)"}`);
+  if (state.notes.trim()) {
+    lines.push("");
+    lines.push("Notes:");
+    lines.push(state.notes.trim());
+  }
+  return lines.join("\n");
+}
+
+async function copySummary() {
+  const text = buildSummaryText();
+  try {
+    await navigator.clipboard.writeText(text);
+    el.copyToast.hidden = false;
+    setTimeout(() => (el.copyToast.hidden = true), 1000);
+  } catch {
+    // Fallback: prompt
+    window.prompt("Copy this:", text);
+  }
+}
+
+function resetAll() {
+  state = blankState();
+  localStorage.removeItem(LS_ORDER);
+  render();
+}
+
+function render() {
+  renderProductGrid();
+  renderLineItems();
+  renderKpis();
+}
+
+let state = loadState();
+
+// Bindings
+el.btnReset.addEventListener("click", resetAll);
+el.btnCopy.addEventListener("click", copySummary);
+
+el.notes.value = state.notes;
+el.notes.addEventListener("input", () => {
+  state.notes = el.notes.value;
+  saveState();
 });
 
-el.btnCloseItem.addEventListener("click", () => {
-  el.itemDialog.close();
-});
-
-el.itemForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  await upsertItem();
-  if (!el.error.hidden) return;
-  el.itemDialog.close();
+el.logoInput.addEventListener("change", () => {
+  const file = el.logoInput.files?.[0];
+  state.logoName = file ? file.name : "";
+  saveState();
+  renderKpis();
 });
 
 // Boot
-await refreshTopUI();
-await loadInventory();
+render();
 
