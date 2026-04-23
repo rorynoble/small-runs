@@ -20,6 +20,8 @@
         <li><a href="#select">Select</a></li>
         <li><a href="#sizes">Sizes</a></li>
         <li><a href="#upload">Upload</a></li>
+        <li><a href="#run">Run</a></li>
+        <li><a href="#notes">Notes</a></li>
       </ul>
 
       <div class="nav-right">
@@ -30,45 +32,18 @@
 
     <main class="page">
       <div class="wrap">
-        <section class="left">
+        <header class="hero">
           <div class="tag">Ordering</div>
           <h1 class="title">BuildYour<br /><em>Run</em>.</h1>
-          <p class="sub">
-            Select products, enter size quantities, then upload your logo. This is a draft builder for now.
-          </p>
+          <p class="sub">Select a product, enter size quantities, then upload your logo.</p>
+        </header>
 
-          <div class="kpis" aria-label="Key metrics">
-            <div class="kpi">
-              <div id="kpiProducts" class="kpi-num">0</div>
-              <div class="kpi-label">Products selected</div>
-            </div>
-            <div class="kpi">
-              <div id="kpiUnits" class="kpi-num">0</div>
-              <div class="kpi-label">Total units</div>
-            </div>
-            <div class="kpi">
-              <div id="kpiLogo" class="kpi-num">—</div>
-              <div class="kpi-label">Logo</div>
-            </div>
-            <div class="kpi">
-              <div id="kpiQuote" class="kpi-num">$0</div>
-              <div class="kpi-label">Quote</div>
-            </div>
-          </div>
-
-          <div style="margin-top: 28px">
-            <div class="tag">Notes</div>
-            <p class="sub">Add print placement, colourways, and any special instructions.</p>
-            <textarea id="notes" class="notes" rows="5" placeholder="e.g. Left chest + back print, 1-colour white, 6 colourways..."></textarea>
-          </div>
-        </section>
-
-        <section class="right">
+        <section class="builder">
           <div id="select" class="panel">
             <div class="panel-head">
               <div class="panel-title">1) Select products</div>
               <div class="panel-actions">
-                <span class="muted" style="font-size: 12px">Multi-select</span>
+                <span class="muted" style="font-size: 12px">Single-select</span>
               </div>
             </div>
             <div class="dialog-body">
@@ -79,20 +54,20 @@
           <div id="sizes" class="panel" style="margin-top: 18px">
             <div class="panel-head">
               <div class="panel-title">2) Sizes + quantities</div>
-              <div class="panel-actions">
-                <button id="btnCopy" class="btn btn-ghost" type="button">Copy summary</button>
-              </div>
+              <div class="panel-actions"></div>
             </div>
             <div class="dialog-body">
               <div id="sizesEmpty" class="muted">Select a product above to start.</div>
               <div id="lineItems" class="line-items"></div>
-              <div id="copyToast" class="muted" style="margin-top: 10px" hidden>Copied.</div>
             </div>
           </div>
 
           <div id="upload" class="panel" style="margin-top: 18px">
             <div class="panel-head">
               <div class="panel-title">3) Upload logo</div>
+              <div class="panel-actions">
+                <button id="btnAddItem" class="btn btn-primary" type="button">Add to run</button>
+              </div>
             </div>
             <div class="dialog-body">
               <div class="row">
@@ -102,9 +77,67 @@
                 </label>
                 <span id="logoName" class="muted">No file selected</span>
               </div>
+
+              <div id="mockupWrap" class="mockup-wrap" hidden>
+                <div class="mockup-box" aria-label="Mockup placement editor">
+                  <div id="mockupOutline" class="mockup-outline" aria-hidden="true"></div>
+                  <div id="mockupImgWrap" class="mockup-img-wrap">
+                    <img id="mockupImg" class="mockup-img" alt="Uploaded logo preview" />
+                  </div>
+                </div>
+                <div class="mockup-controls">
+                  <div class="meta-label">Size</div>
+                  <input id="mockupScale" type="range" min="0.25" max="2" step="0.01" value="1" />
+                </div>
+              </div>
+
               <p class="muted" style="margin: 12px 0 0">
                 Note: this page doesn’t send files anywhere yet, it just captures the file name for the order summary.
               </p>
+            </div>
+          </div>
+
+          <div id="run" class="panel" style="margin-top: 18px">
+            <div class="panel-head">
+              <div class="panel-title">Run summary</div>
+              <div class="panel-actions">
+                <button id="btnCopy" class="btn btn-ghost" type="button">Copy summary</button>
+              </div>
+            </div>
+            <div class="dialog-body">
+              <div class="kpis" aria-label="Key metrics">
+                <div class="kpi">
+                  <div id="kpiProducts" class="kpi-num">0</div>
+                  <div class="kpi-label">Products in run</div>
+                </div>
+                <div class="kpi">
+                  <div id="kpiUnits" class="kpi-num">0</div>
+                  <div class="kpi-label">Total units</div>
+                </div>
+                <div class="kpi">
+                  <div id="kpiLogo" class="kpi-num">0</div>
+                  <div class="kpi-label">Artwork added</div>
+                </div>
+                <div class="kpi">
+                  <div id="kpiQuote" class="kpi-num">$0</div>
+                  <div class="kpi-label">Quote</div>
+                </div>
+              </div>
+
+              <div id="runEmpty" class="muted" style="margin-top: 14px">No products added yet.</div>
+              <div id="runItems" class="run-items" style="margin-top: 12px"></div>
+
+              <div id="copyToast" class="muted" style="margin-top: 10px" hidden>Copied.</div>
+            </div>
+          </div>
+
+          <div id="notes" class="panel" style="margin-top: 18px">
+            <div class="panel-head">
+              <div class="panel-title">Notes</div>
+            </div>
+            <div class="dialog-body">
+              <p class="muted" style="margin: 0 0 12px">Add print placement, colourways, and any special instructions.</p>
+              <textarea id="notes" class="notes" rows="5" placeholder="e.g. Left chest + back print, 1-colour white, 6 colourways..."></textarea>
             </div>
           </div>
         </section>
