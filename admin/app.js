@@ -19,23 +19,61 @@ const OUTLINES = {
   `,
   hoodie: `
     <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M140 55 L170 25 H250 L280 55 L338 85 L315 135 L285 115 V270 H135 V115 L105 135 L82 85 L140 55 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
-      <path d="M170 25 C160 75,260 75,250 25" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
-      <path d="M200 95 L200 270" stroke="rgba(13,13,13,0.25)" stroke-width="3"/>
-      <path d="M220 95 L220 270" stroke="rgba(13,13,13,0.25)" stroke-width="3"/>
+      <!-- Silhouette -->
+      <path d="M140 62 L170 32 H250 L280 62 L335 92 L314 148 L288 134 V270 H132 V134 L106 148 L85 92 L140 62 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linejoin="round"/>
+
+      <!-- Hood -->
+      <path d="M170 32 C152 98 268 98 250 32" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M178 45 C168 92 252 92 242 45" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Drawstrings -->
+      <path d="M198 110 L205 148" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M222 110 L215 148" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Kangaroo pocket -->
+      <path d="M168 176 H252 C263 176 270 183 270 194 V236 H150 V194 C150 183 157 176 168 176 Z" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M150 206 H270" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Ribbing -->
+      <path d="M132 258 H288" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
     </svg>
   `,
   sweatshirt: `
     <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M140 55 L170 25 H250 L280 55 L338 85 L315 135 L285 115 V270 H135 V115 L105 135 L82 85 L140 55 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
-      <path d="M170 25 C175 58,245 58,250 25" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
+      <!-- Silhouette -->
+      <path d="M140 62 L170 32 H250 L280 62 L335 92 L314 148 L288 134 V270 H132 V134 L106 148 L85 92 L140 62 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linejoin="round"/>
+
+      <!-- Crew neck -->
+      <path d="M175 32 C182 58 238 58 245 32" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M175 38 C184 60 236 60 245 38" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Shoulder seams -->
+      <path d="M170 44 L140 62" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M250 44 L280 62" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Ribbing -->
+      <path d="M132 258 H288" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
     </svg>
   `,
   jacket: `
     <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M150 60 L175 25 H245 L270 60 L330 92 L308 140 L280 120 V270 H140 V120 L112 140 L90 92 L150 60 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
-      <path d="M205 25 L210 270" stroke="rgba(13,13,13,0.25)" stroke-width="3"/>
-      <path d="M215 25 L210 55" stroke="rgba(13,13,13,0.25)" stroke-width="3"/>
+      <!-- Silhouette (anorak-style) -->
+      <path d="M145 62 L170 32 H250 L275 62 L333 94 L312 148 L286 134 V270 H134 V134 L108 148 L87 94 L145 62 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linejoin="round"/>
+
+      <!-- Hood -->
+      <path d="M170 32 C152 96 268 96 250 32" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M178 45 C168 90 252 90 242 45" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Zipper -->
+      <path d="M210 92 L210 270" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Panel seam + pocket -->
+      <path d="M138 150 H282" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M160 170 H260 C268 170 272 174 272 182 V210 H148 V182 C148 174 152 170 160 170 Z" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M158 188 H262" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Ribbing -->
+      <path d="M134 258 H286" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
     </svg>
   `,
   trucker_cap: `
@@ -59,8 +97,17 @@ const OUTLINES = {
   `,
   bucket_hat: `
     <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M150 130 C150 105,175 88,210 88 C245 88,270 105,270 130 L285 200 C285 230,255 248,210 248 C165 248,135 230,135 200 L150 130 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
-      <path d="M120 210 C150 228,270 228,300 210" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <!-- Crown -->
+      <path d="M165 78 H255 L270 145 H150 L165 78 Z" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M150 145 H270" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Brim -->
+      <path d="M120 165 C155 250 265 250 300 165" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M132 172 C162 230 258 230 288 172" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Stitch hints -->
+      <path d="M150 182 C170 206 250 206 270 182" stroke="rgba(13,13,13,0.18)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M145 197 C168 220 252 220 275 197" stroke="rgba(13,13,13,0.18)" stroke-width="3" stroke-linecap="round"/>
     </svg>
   `,
 };
