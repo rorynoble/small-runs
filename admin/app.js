@@ -40,9 +40,21 @@ const OUTLINES = {
   `,
   trucker_cap: `
     <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M120 170 C120 115,175 85,210 85 C245 85,300 115,300 170" stroke="rgba(13,13,13,0.35)" stroke-width="3"/>
-      <path d="M165 175 C165 135,190 120,210 120 C230 120,255 135,255 175" stroke="rgba(13,13,13,0.25)" stroke-width="3"/>
-      <path d="M300 170 L355 195" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <!-- Crown (front-on) -->
+      <path d="M120 200 C120 120 165 80 210 80 C255 80 300 120 300 200" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M120 200 C145 225 175 235 210 235 C245 235 275 225 300 200" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Front panel seams -->
+      <path d="M210 92 L210 225" stroke="rgba(13,13,13,0.25)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M155 200 C160 150 180 115 210 92" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M265 200 C260 150 240 115 210 92" stroke="rgba(13,13,13,0.20)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Brim -->
+      <path d="M135 215 C170 255 250 255 285 215" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M110 225 C155 285 265 285 310 225" stroke="rgba(13,13,13,0.35)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Top button -->
+      <circle cx="210" cy="74" r="6" stroke="rgba(13,13,13,0.25)" stroke-width="3" />
     </svg>
   `,
   bucket_hat: `
